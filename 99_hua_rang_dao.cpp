@@ -8,22 +8,32 @@ void hidecursor()
 	CONSOLE_CURSOR_INFO cursor_info={1,0};//第二个值为零表示光标隐藏
 	SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE),&cursor_info); 
 }
-/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////以下全局 
 	int a[20]={1,2,3,4,5,6,7,8},input;
 	int b[20]={1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
-	int c1=0,c2=0,t,i,now,win=1,ok=0;
-void change(int*a,int*b)
+	int c1=0,c2=0;
+	int t,now;//交换中的代替值，现在空项所在位置 
+	int i,win=1,ok=0;//判断完全复原，判断当前已复原个数 
+	int nowtime,starttime; 
+void change(int*a,int*b)//交换两个数值 
 {
 	t=*a;
 	*a=*b;
 	*b=t;
 }
+void allstart()//总起点 
+{
+	printf("Click q or w to choose 9 or 16."); 
+	input=getch();
+	nowtime=starttime=time(NULL);
+}
+///////////////////////////////////////////////////////////////////////////////////////以下4*4
 void start16()
 {
 	hidecursor();//隐藏光标 
-	system("cls");
+	system("cls");//清屏 
 	srand(time(NULL));
-	for(i=1;i<=2;i++)
+	for(i=1;i<=100;i++)//反复交换打乱
 	{
 		c1=rand()%15;
 		c2=rand()%15;
@@ -44,36 +54,37 @@ void in16()
 		change(&b[now],&b[now+1]);
 	if(input=='d'&&now!=0&&now!=4&&now!=8&&now!=12)
 		change(&b[now],&b[now-1]);
-	if(input=='b')
+	if(input=='b')//保证有解 
 		change(&b[15],&b[14]);
 }
 void out16()
 {
 	system("cls");
+	nowtime=time(NULL);
 	for(i=0;i<=15;i++)
 	{
 		if(i%4==0)
 			puts("\n");
 		if(b[i]!=0)
 			printf("%4d",b[i]);
-		else if(b[i]==0)
+		else if(b[i]==0)//空项独立输出 
 		{
 			printf("    ");
 			now=i;
-		}
-			
+		}			
 	}
-	for(i=0;i<=15;i++)
+	printf("\n%d",nowtime-starttime);
+	for(i=0;i<=15;i++)//判断复原个数 
 		if(b[i]==i+1)
 			ok++;
 	if(ok>=15)
 	{
 		win=0;
-		printf("   win!!");
+		printf("   win!!\n");
 	}	
 	ok=0;
 }
-///////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////以下3*3 
 
 void start9()
 {
@@ -107,6 +118,7 @@ void in9()
 void out9()
 {
 	system("cls");
+	nowtime=time(NULL);
 	for(i=0;i<=8;i++)
 	{
 		if(i%3==0)
@@ -120,7 +132,7 @@ void out9()
 			now=i;
 		}
 	}
-
+	printf("\n%d",nowtime-starttime);
 	for(i=0;i<=8;i++)
 		if(a[i]==i+1)
 			ok++;
@@ -131,26 +143,35 @@ void out9()
 	}	
 	ok=0;
 }
+///////////////////////////////////////////////////////////////////
+void finish()
+{
+	printf("time==%d\n",nowtime-starttime);
+	win=1;
+}
 int main()
 {
-	printf("Click q or w to choose 9 or 16."); 
-	input=getch();
-	if(input=='q')
+	while(1)//无限反复 
 	{
-		start9();
-		while(win)
+		allstart();
+		if(input=='q')//3*3
 		{
-			out9();
-			in9();
-		} 
-	}
-	else if(input=='w')
-	{
-		start16();
-		while(win)
+			start9();
+			while(win)
+			{
+				out9();
+				in9();
+			} 
+		}
+		else if(input=='w')//4*4
 		{
-			out16();
-			in16();
-		} 
+			start16();
+			while(win)
+			{
+				out16();
+				in16();
+			} 
+		}
+		finish();
 	}
 }

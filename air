@@ -1,0 +1,165 @@
+#include <stdio.h>
+#include <conio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <windows.h>
+void gotoxy(int x, int y) //ÇåÆÁ 
+{
+    COORD pos = {x,y};
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);// »ñÈ¡±ê×¼Êä³öÉè±¸¾ä±ú
+    SetConsoleCursorPosition(hOut, pos);//Á½¸ö²ÎÊý·Ö±ðÊÇÖ¸¶¨ÄÄ¸ö´°Ìå£¬¾ßÌåÎ»ÖÃ
+}
+void hidecursor()
+{
+	CONSOLE_CURSOR_INFO cursor_info={1,0};//µÚ¶þ¸öÖµÎªÁã±íÊ¾¹â±êÒþ²Ø
+	SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE),&cursor_info); 
+}
+/////////////////////////////////////////////·Ö¸îÏß//////////////////////////////////////////////////////////////////
+	int x=26,y=18,i,j;//·É»úÎ»ÖÃ±äÁ¿
+	int nx[100]={-1},ny[100]={0},k=1;//°Ð×ÓÎ»ÖÃ 
+	int iskill=1,killtime=0;//»÷É±´ÎÊý 
+	int now,start,resttime,moretime=0;    
+	static double nmove=0,nmovep=20,napp=0;//ÏÂÂäËÙ¶È 
+	char input;
+	int look[100][100]={0}; 
+	int level=1;
+	int highest;
+
+void startup()//³õÊ¼»¯
+{	
+	srand(time(NULL));
+	now=start=time(NULL);
+	hidecursor();//Òþ²Ø¹â±ê 
+} 
+void Over()//·´¸´ 
+{
+	now=time(NULL);
+	resttime=20-now+start;
+	printf("          Ê±¼ä=%d    »÷É±=%d	·ÖÊý=%d\n          wasd¿ØÖÆ·½Ïò£¬j ¿ª»ð, k ÐøÃü£¡\n           ÐøÃü£º-5»÷É±+20¹¶Ãü",resttime+moretime,killtime,now-start+killtime*3);
+	gotoxy(0,0); 
+ 	if(napp>=nmovep*5/2)//°Ð×Ó³öÏÖ 
+ 	{
+ 		k++;                        
+ 		if(k>=10)k=1;
+		nx[k]=rand()%30+12;            
+ 		ny[k]=2;
+ 		napp=1;
+ 		look[nx[k]][ny[k]]=4;//°Ð×Ó¶¨Òå
+ 	}
+ 	else
+ 		napp++;
+	
+	look[x][y]=1;//·É»ú¶¨Òå 
+	if(nmove>=nmovep)//¸÷°Ð×ÓËÙ¶È 
+	{
+		nmove=0;
+		nmovep*=0.995;
+		for(i=1;i<=10;i++)
+		{ 
+			if(ny[i]>0&&ny[i]<35&&nx[i]>1)
+			{
+				look[nx[i]][ny[i]]=0;
+				ny[i]++;
+				look[nx[i]][ny[i]]=4;
+			}
+			else
+			{
+				nx[i]=-10;
+				ny[i]=-1;
+			}
+		} 
+				
+	}	
+	else
+		nmove++;
+
+
+	//look[nx[k]][ny[k]]=4;//°Ð×Ó¶¨Òå
+		
+	for(i=1;i<=23;i++)////Î»ÖÃÔÚÕâÀï¶¨Òå 
+	{
+		for(j=1;j<=42;j++)
+		{
+			if(look[j][i]==4)//°Ð×Ó 
+				printf("O");
+			else if(look[j][i]==1)//·É»ú
+				printf("A");
+			else if(look[j][i]==2)//×Óµ¯
+			{
+				look[j][i]=0;
+				if(i>=3)
+					look[j][i-1]=2;
+				printf("|");
+			}
+			else if((j==11||j==42)&&(i>2&&i<=23)||(j>=11&&j<=42)&&(i==2||i==23)) 
+				printf("|");
+			else
+				printf(" ");//¿ÕÆø 
+		}	
+		printf("\n");
+	}
+	for(i=1;i<=10;i++)
+	{
+		if(nx[i]>0&&nx[i]<42&&ny[i]>0&&ny[i]<21&&look[nx[i]][ny[i]]==2)//»÷ÖÐÁË 	
+		{
+			look[nx[i]][ny[i]]=0;
+			killtime++;
+			nx[i]=1;
+		}
+	}	
+}
+void Input()//ÊäÈë 
+{
+	if(kbhit())
+	{
+		
+		input=getch();
+		if(input=='w'&&y>=4)//ÉÏ 
+		{
+			look[x][y]=0;
+			y--;
+		}
+		else if(input=='a'&&x>=13)//×ó 
+		{
+			look[x][y]=0;
+			x--;
+		}
+		else if(input=='d'&&x<=40)//ÓÒ 
+		{
+			look[x][y]=0;
+			x++;
+		}
+		else if(input=='s'&&y<=21)//ÏÂ 
+		{
+			look[x][y]=0;
+			y++;
+		}
+		else if(input=='j')//¿ª»ð 
+		{	
+			look[x][y-1]=2;
+		}		
+		else if(input=='k'&&killtime>=5)//ÐøÃü
+		{
+			killtime-=5;
+			moretime+=20;
+		}
+
+	}
+}
+void Finish()
+{
+	system("cls");
+	printf("          ÄãÖ»»îÁË%dÃë£¬µÃÁË%d·Ö",now-start,now-start+killtime*3);
+	Sleep(3000);
+}
+
+int main (void)
+{
+	startup();//³õÊ¼»¯ 
+	while(look[x][y]!=4&&resttime+moretime>=0)
+	{
+		Input();//ÊäÈë
+		Over();//·´¸´ 
+	} 
+	Finish();
+} 
